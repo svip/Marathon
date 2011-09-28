@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # -*- encoding: utf-8 -*-
 
+from basic import Basic
 from optparse import OptionParser
 import re, os, sys, pickle, time, urllib
 from rss import RSS
-		
 
-class Marathon:
+class Marathon(Basic):
 
 	configfile = "./config"
 	mplayerconfig = ""
