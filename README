@@ -1,0 +1,20 @@
+Marathon allows you to keep track of your television shows, and other video 
+files associated by their own title.
+
+This is helpful if your files are scattered across saveral partitions due to
+disk size issues, general torrent directories and so on.  Further more, it will
+also notify you when new episodes are available of a given show, allow you to
+automatically download your shows and so forth.
+
+REQUIRES:
+
+ * mplayer
+    
+    Marathon uses mplayer as its video player, there are no intentions right now
+    to allow other video players as well.
+
+RECOMMENDATIONS:
+
+ * screen
+    
+    Running Marathon in screen is *strongly* recommended.
