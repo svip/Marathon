@@ -316,12 +316,9 @@ class Marathon(Basic):
 					self.download_torrent(item['url'], item['title'])
 	
 	def run(self):
-		if self.cont:
-			self.currentshow = self.c.showdata[0]['currentshow']
-			menu = self.SHOW
-			self.watch(self.c.showdata[self.currentshow]['currentepisode'])
-		else:
-			menu = self.MAIN
+		# this will eventually be more fluid and just a hackish
+		# run loop like this.
+		menu = self.MAIN
 		while True:
 			# main loop
 			print ""
@@ -500,14 +497,11 @@ class Marathon(Basic):
 
 	def __init__(self):
 		parser = OptionParser()
-		parser.add_option("-c", "--continue", dest="cont",
-			action="store_true", help="Continue where you left off without prompt.")
 		parser.add_option("-f", "--fix", dest="fix",
 			action="store_true", help="Fix the configuration file if it contains error.")
 		parser.add_option("-e", "--empty", dest="empty",
-			action="store_true", help="Empty configuration file.")
+			action="store_true", help="Empty configuration file (not implemented).")
 		(options, args) = parser.parse_args()
-		self.cont = options.cont
 		self.c = Config()
 		if options.empty:
 			print "Not implemented."
