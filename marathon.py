@@ -314,6 +314,7 @@ class Marathon(Basic):
 					break
 				if action == 'y':
 					self.download_torrent(item['url'], item['title'])
+		self.c.rsslastupdate = self.rss.rssfeeds[0]['lastupdate']
 	
 	def run(self):
 		# this will eventually be more fluid and just a hackish
@@ -508,6 +509,7 @@ class Marathon(Basic):
 			#self.empty()
 		if options.fix:
 			self.c.fix_config()
+		self.rss = RSS(self.c.rssfeeds, self.c.showdata[0]['rsslastupdate'])
 		self.run()
 
 Marathon()

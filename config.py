@@ -1,4 +1,4 @@
-import re, os, sys, pickle
+import re, os, sys, pickle, time
 from basic import Basic
 
 class Config(Basic):
@@ -120,7 +120,7 @@ class Config(Basic):
 	
 	def save(self):
 		f = open(self.configfile, "w")
-		self.showdata[0].update({'rsslastupdate' : self.rss.lastupdate})
+		self.showdata[0].update({'rsslastupdate' : self.rsslastupdate})
 		self.showdata[0].update({'rssfeeds' : self.rssfeeds})
 		self.showdata[0].update({'torrentwatchdir' : self.torrentwatchdir})
 		pickle.dump(self.showdata, f)
@@ -129,13 +129,10 @@ class Config(Basic):
 	
 	def __init__(self):
 		self.config_init()
-		if options.fix:
-			self.fix_config()
 		try:
 			self.rssfeeds = self.showdata[0]['rssfeeds']
-			self.rss = RSS(self.rssfeeds, self.showdata[0]['rsslastupdate'])
 		except KeyError:
-			self.rss = RSS([], 0)
+			self.rssfeeds = []
 		try:
 			self.torrentwatchdir = self.showdata[0]['torrentwatchdir']
 		except KeyError:
