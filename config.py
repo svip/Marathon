@@ -5,7 +5,6 @@ class Config(Basic):
 
 	configfile = "./config"
 	mplayerconfig = ""
-	shows = []
 	showdata = {}
 	rssfeeds = []
 	torrentwatchdir = ''
@@ -21,7 +20,8 @@ class Config(Basic):
 		except IOError:
 			print "No configuration file found..."
 			print "Creating configuration `%s'..." % self.configfile
-			self.showdata = {0 : {}}
+			self.showdata = {0 : {'mplayerconfig': '', 'currentshow':None,
+				'torrentwatchdir': '', 'rssfeeds' : [], 'rsslastupdate' : 0.0}}
 			f = open(self.configfile, "w")
 			pickle.dump(self.showdata, f)
 			f.close()
@@ -140,4 +140,3 @@ class Config(Basic):
 			self.torrentwatchdir = self.showdata[0]['torrentwatchdir']
 		except KeyError:
 			self.torrentwatchdir = ''
-		self.run()

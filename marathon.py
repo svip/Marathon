@@ -5,26 +5,17 @@ from basic import Basic
 from optparse import OptionParser
 import re, os, sys, pickle, time, urllib
 from rss import RSS
+from config import Config
 
 class Marathon(Basic):
 
-	configfile = "./config"
-	mplayerconfig = ""
+	c = None
 	rss = None
 	shows = []
-	showdata = {}
-	rssfeeds = []
-	currentshow = None
-	torrentwatchdir = ''
+	currentshow = ''
 	knownfileextensions = ["mpg", "avi", "mkv", "mp4"]
 	
 	MAIN, SHOW, SHOWS, ADDSHOWS, RSS, SETTINGS = range(6)
-	
-	def autosave(self):
-		if time.time() - os.stat(self.configfile).st_mtime > 60*30:
-			print "Configuration file not saved for 30 minutes..."
-			print "Autosaving..."
-			self.save()
 	
 	def rsscheck(self):
 		if self.rss.check():
@@ -131,27 +122,27 @@ class Marathon(Basic):
 				show = self.add_files(title, show)
 			else:
 				break
-		self.showdata.update({title : show})
+		self.c.showdata.update({title : show})
 		if not title in self.shows:
 			self.shows.append(title)
 	
 	def mplayer(self, filename, mplayersettings=None):
 		if mplayersettings==None:
-			s = os.system("mplayer %s \"%s\"" % (self.mplayerconfig, filename))
+			s = os.system("mplayer %s \"%s\"" % (self.c.mplayerconfig, filename))
 		else:
 			s = os.system("mplayer %s \"%s\"" % (mplayersettings, filename))			
 		return s == 0
 	
 	def watch(self, curep):
-		ep = self.showdata[self.currentshow]['episodes'][curep[0]][curep[1]]
+		ep = self.c.showdata[self.currentshow]['episodes'][curep[0]][curep[1]]
 		try:
-			s = self.showdata[self.currentshow]['mplayersettings']
+			s = self.c.showdata[self.currentshow]['mplayersettings']
 			if s.strip() == '':
 				s = None
 		except KeyError:
 			s = None
 		if self.mplayer(ep, s):
-			self.showdata[self.currentshow]['currentepisode'] = self.next_episode(self.showdata[self.currentshow]['episodes'], curep)
+			self.c.showdata[self.currentshow]['currentepisode'] = self.next_episode(self.c.showdata[self.currentshow]['episodes'], curep)
 			return True
 		else:
 			return False
@@ -159,7 +150,7 @@ class Marathon(Basic):
 	def cwatch(self, curep):
 		while True:
 			if self.watch(curep):
-				curep = self.showdata[self.currentshow]['currentepisode']
+				curep = self.c.showdata[self.currentshow]['currentepisode']
 			else:
 				break
 	
@@ -183,7 +174,7 @@ class Marathon(Basic):
 	
 	def handle_episode(self, show, season, episode):
 		print ""
-		print "Episode: (S%sE%s)\n%s" % (self.z(season), self.z(episode), self.showdata[show]['episodes'][season][episode])
+		print "Episode: (S%sE%s)\n%s" % (self.z(season), self.z(episode), self.c.showdata[show]['episodes'][season][episode])
 		p = self.menu([("WATCH", "Watch"),
 			("CURRENT", "Set this to current"),
 			("EDIT", "Edit"),
@@ -194,12 +185,12 @@ class Marathon(Basic):
 			if p == "WATCH":
 				pass
 			elif p == "CURRENT":
-				self.showdata[show]['currentepisode'] = (season, episode)
+				self.c.showdata[show]['currentepisode'] = (season, episode)
 				print "Current episode to season %s, episode %s." % (season, episode)
 			elif p == "EDIT":
 				pass
 			elif p == "REMOVE":
-				self.showdata[show]['episodes'][season].pop(episode)
+				self.c.showdata[show]['episodes'][season].pop(episode)
 				print "Removed."
 			self.handle_episode(show, season, episode)
 	
@@ -207,8 +198,8 @@ class Marathon(Basic):
 		print ""
 		print "Episodes of season %s:" % season
 		tmp = []
-		for episode in self.showdata[show]['episodes'][season]:
-			t = self.showdata[show]['episodes'][season][episode]
+		for episode in self.c.showdata[show]['episodes'][season]:
+			t = self.c.showdata[show]['episodes'][season][episode]
 			t = t.split("/")
 			tmp.append((episode, t[len(t)-1]))
 		tmp.sort(self.seasonsort)
@@ -220,7 +211,7 @@ class Marathon(Basic):
 		else:
 			try:
 				e = int(p)
-				t = self.showdata[show]['episodes'][season][e]
+				t = self.c.showdata[show]['episodes'][season][e]
 				self.handle_episode(show, season, e)
 			except (ValueError, KeyError):
 				pass
@@ -231,14 +222,14 @@ class Marathon(Basic):
 		print "Known seasons:"
 		tmp = []
 		topop = []
-		for season in self.showdata[show]['episodes']:
+		for season in self.c.showdata[show]['episodes']:
 			try:
 				int(season)
-				tmp.append((season, len(self.showdata[show]['episodes'][season])))
+				tmp.append((season, len(self.c.showdata[show]['episodes'][season])))
 			except ValueError:
 				topop.append(season)
 		for p in topop:
-			self.showdata[show]['episodes'].pop(p)
+			self.c.showdata[show]['episodes'].pop(p)
 		tmp.sort(self.seasonsort)
 		for season in tmp:
 			print "%s: (%s episodes)" % season
@@ -248,7 +239,7 @@ class Marathon(Basic):
 		else:
 			try:
 				s = int(p)
-				t = self.showdata[show]['episodes'][s]
+				t = self.c.showdata[show]['episodes'][s]
 				self.browse_season(show, s)
 			except (ValueError, KeyError, TypeError):
 				pass
@@ -257,12 +248,12 @@ class Marathon(Basic):
 	def set_currentshow(self, s):
 		self.currentshow = s
 		try:
-			self.showdata[0]['currentshow'] = self.currentshow
+			self.c.showdata[0]['currentshow'] = self.currentshow
 		except KeyError:
 			try:
-				self.showdata[0].update({'currentshow' : self.currentshow})
+				self.c.showdata[0].update({'currentshow' : self.currentshow})
 			except KeyError:
-				self.showdata.update({0 : {'currentshow' : self.currentshow}})
+				self.c.showdata.update({0 : {'currentshow' : self.currentshow}})
 	
 	def menu(self, menu, default=None):
 		i = 1
@@ -286,7 +277,7 @@ class Marathon(Basic):
 			return p
 	
 	def download_torrent(self, url, title):
-		os.system("wget \"%s\" -O \"%s/%s.torrent\"" % (url, self.torrentwatchdir, title.replace(' ', '_')))
+		os.system("wget \"%s\" -O \"%s/%s.torrent\"" % (url, self.c.torrentwatchdir, title.replace(' ', '_')))
 	
 	def rssmenu(self):
 		if len(self.rssfeeds) < 1:
@@ -326,9 +317,9 @@ class Marathon(Basic):
 	
 	def run(self):
 		if self.cont:
-			self.currentshow = self.showdata[0]['currentshow']
+			self.currentshow = self.c.showdata[0]['currentshow']
 			menu = self.SHOW
-			self.watch(self.showdata[self.currentshow]['currentepisode'])
+			self.watch(self.c.showdata[self.currentshow]['currentepisode'])
 		else:
 			menu = self.MAIN
 		while True:
@@ -357,7 +348,7 @@ class Marathon(Basic):
 				i = 0
 				for show in self.shows:
 					i += 1
-					print "%s: %s (%s left)" % (i, show, self.get_episodes_left(self.showdata[show]))
+					print "%s: %s (%s left)" % (i, show, self.get_episodes_left(self.c.showdata[show]))
 				p = self.i("Option: ", True)
 				if p == "RETURN":
 					menu = self.MAIN
@@ -376,12 +367,12 @@ class Marathon(Basic):
 			elif menu == self.SHOW:
 				print "Selected `%s'..." % self.currentshow
 				try:
-					curep = self.showdata[self.currentshow]['currentepisode']
+					curep = self.c.showdata[self.currentshow]['currentepisode']
 				except:
-					self.showdata[self.currentshow]['currentepisode'] = (1, 1)
+					self.c.showdata[self.currentshow]['currentepisode'] = (1, 1)
 					curep = (1, 1)
 				try:
-					tep = self.showdata[self.currentshow]['episodes'][curep[0]][curep[1]]
+					tep = self.c.showdata[self.currentshow]['episodes'][curep[0]][curep[1]]
 				except KeyError:
 					while True:
 						curep = (curep[0], curep[1]-1)
@@ -391,7 +382,7 @@ class Marathon(Basic):
 							tep = None
 							break
 						try:
-							tep = self.showdata[self.currentshow]['episodes'][curep[0]][curep[1]]
+							tep = self.c.showdata[self.currentshow]['episodes'][curep[0]][curep[1]]
 							break
 						except KeyError:
 							continue
@@ -409,22 +400,22 @@ class Marathon(Basic):
 					elif p == "CWATCH":
 						self.cwatch(curep)
 					elif p == "ADD":
-						self.showdata[self.currentshow] = self.add_files(self.currentshow, self.showdata[self.currentshow], True)
+						self.c.showdata[self.currentshow] = self.add_files(self.currentshow, self.c.showdata[self.currentshow], True)
 					elif p == "BROWSE":
 						self.browse_show(self.currentshow)
 					elif p == "MPLAYER":
 						try:
-							settings = self.showdata[self.currentshow]['mplayersettings']
+							settings = self.c.showdata[self.currentshow]['mplayersettings']
 						except:
 							settings = ''
-							self.showdata[self.currentshow].update({'mplayersettings':''})
+							self.c.showdata[self.currentshow].update({'mplayersettings':''})
 						print ""
-						print "Set mplayer settings for `%s':" % self.showdata[self.currentshow]['title']
+						print "Set mplayer settings for `%s':" % self.c.showdata[self.currentshow]['title']
 						print settings
 						print "Hit enter to make no chance; space and enter to clear."
 						p = self.i(": ")
 						if p != '':
-							self.showdata[self.currentshow]['mplayersettings'] = p
+							self.c.showdata[self.currentshow]['mplayersettings'] = p
 					elif p == "RETURN":
 						menu = self.SHOWS
 					elif p == "TOP":
@@ -446,8 +437,8 @@ class Marathon(Basic):
 					print "Hit enter to make no chance; space and enter to clear."
 					c = self.i(": ")
 					if c != '':
-						self.mplayerconfig = c
-						self.showdata[0]['mplayerconfig'] = c
+						self.c.mplayerconfig = c
+						self.c.showdata[0]['mplayerconfig'] = c
 						print "Set mplayer option to: %s" % c
 				elif p == "RETURN":
 					menu = self.MAIN
@@ -469,13 +460,13 @@ class Marathon(Basic):
 			p = raw_input(msg)
 		except EOFError:
 			print ""
-			self.save()
+			self.c.save()
 			print "Quit."
 			sys.exit()
 		except KeyboardInterrupt:
 			return None
 		if p == ":quit" or p == ":q":
-			self.save()
+			self.c.save()
 			print "Quit."
 			sys.exit()
 		if anoption:
@@ -492,7 +483,7 @@ class Marathon(Basic):
 				return "RETURN"
 			if p == "/":
 				return "TOP"
-		self.autosave()
+		self.c.autosave()
 		self.rsscheck()
 		return p
 	
@@ -500,116 +491,12 @@ class Marathon(Basic):
 		if i < 10:
 			return "0%s" % i
 		return i
-		
-	def config_init(self):
-		try:
-			f = open(self.configfile)
-			self.showdata = pickle.load(f)
-			self.shows = []
-			f.close()
-			print "Data loaded."
-		except IOError:
-			print "No configuration file found..."
-			print "Creating configuration `%s'..." % self.configfile
-			self.showdata = {0 : {}}
-			f = open(self.configfile, "w")
-			pickle.dump(self.showdata, f)
-			f.close()
-		for s in self.showdata:
-			if s == 0:
-				continue
-			self.shows.append(s)
-		try:
-			self.mplayerconfig = self.showdata[0]['mplayerconfig']
-		except KeyError:
-			self.dataerror()
-			self.mplayerconfig = ''
 	
 	def dataerror(self):
 		print "Data error.  Please run script with -f"
 	
-	def fix_config(self):
-		# test settings
-		print "Attempting to fix the showdata..."
-		try:
-			t = self.showdata[0]
-		except KeyError:
-			self.showdata.update({0: {}})
-		try:
-			t = self.showdata[0]['mplayerconfig']
-		except KeyError:
-			self.showdata[0].update({'mplayerconfig' : ''})
-		try:
-			t = self.showdata[0]['currentshow']
-		except KeyError:
-			self.showdata[0].update({'currentshow' : None})
-		topop = []
-		for show in self.showdata:
-			if show == 0:
-				continue
-			try:
-				t = self.showdata[show]['currentepisode']
-			except KeyError:
-				self.showdata[show].update({'currentepisode' : (1, 1)})
-			try:
-				t = self.showdata[show]['episodes']
-				if len(t) == 0:
-					# empty?  Delete this show!
-					print "`%s' contained no episodes; deleting..." % show
-					topop.append(show)
-					continue
-			except KeyError:
-				# no episodes?  Better delete this show.
-				print "`%s' contained no episodes; deleting..." % show
-				topop.append(show)
-				continue
-			curep = self.showdata[show]['currentepisode']					
-			while True:
-				try:
-					season = self.showdata[show]['episodes'][curep[0]]
-					try:
-						episode = self.showdata[show]['episodes'][curep[0]][curep[1]]
-						curep = (curep[0], curep[1])
-						break
-					except KeyError:
-						curep = (curep[0], curep[1]+1)
-				except KeyError:
-					curep = (curep[0]+1, 1)
-			self.showdata[show]['currentepisode'] = curep
-		for pop in topop:
-			self.showdata.pop(pop)
-		print "Fixed."
-		self.save()				
-
-	def empty(self):
-		print "This will empty all your configuration files."
-		print "ALL YOUR SETTINGS WILL BE LOST."
-		r = None
-		while r == None:
-			r = raw_input("Are you sure you want to do this? (y/N) ")
-			if r == "" or r.lower() == "n":
-				w = False
-			elif r.lower() == "y":
-				w = True
-			else:
-				r = None
-		if w:
-			print "Emptying configuration file...",
-			f = open(self.configfile, "w")
-			f.write("")
-			f.close()
-			print "done"
-		else:
-			print "Not emptying configuration file..."	
-	
 	def save(self):
-		f = open(self.configfile, "w")
-		self.showdata[0].update({'rsslastupdate' : self.rss.lastupdate})
-		self.showdata[0].update({'rssfeeds' : self.rssfeeds})
-		self.showdata[0].update({'torrentwatchdir' : self.torrentwatchdir})
-		pickle.dump(self.showdata, f)
-		f.close()
-		print "Saved."	
+		self.c.save()
 
 	def __init__(self):
 		parser = OptionParser()
@@ -621,20 +508,12 @@ class Marathon(Basic):
 			action="store_true", help="Empty configuration file.")
 		(options, args) = parser.parse_args()
 		self.cont = options.cont
+		self.c = Config()
 		if options.empty:
-			self.empty()
-		self.config_init()
+			print "Not implemented."
+			#self.empty()
 		if options.fix:
-			self.fix_config()
-		try:
-			self.rssfeeds = self.showdata[0]['rssfeeds']
-			self.rss = RSS(self.rssfeeds, self.showdata[0]['rsslastupdate'])
-		except KeyError:
-			self.rss = RSS([], 0)
-		try:
-			self.torrentwatchdir = self.showdata[0]['torrentwatchdir']
-		except KeyError:
-			self.torrentwatchdir = ''
+			self.c.fix_config()
 		self.run()
 
 Marathon()
