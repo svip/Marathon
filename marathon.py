@@ -200,7 +200,12 @@ class Marathon(Basic):
 		tmp = []
 		for episode in self.c.showdata[show]['episodes'][season]:
 			t = self.c.showdata[show]['episodes'][season][episode]
-			t = t.split("/")
+			try:
+				t = t.split("/")
+			except AttributeError:
+				print "Unusual error"
+				print t,dir(t)
+				return
 			tmp.append((episode, t[len(t)-1]))
 		tmp.sort(self.seasonsort)
 		for episode in tmp:
