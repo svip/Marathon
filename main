@@ -1,0 +1,17 @@
+#!/usr/bin/env python
+# -*- encoding: utf-8 -*-
+from optparse import OptionParser
+from menu import Menu
+
+class Main:
+
+	def __init__(self):		
+		parser = OptionParser()
+		parser.add_option("-f", "--fix", dest="fix",
+			action="store_true", help="Fix the configuration file if it contains error.")
+		parser.add_option("-e", "--empty", dest="empty",
+			action="store_true", help="Empty configuration file (not implemented).")
+		(options, args) = parser.parse_args()
+		Menu(options)
+
+Main()

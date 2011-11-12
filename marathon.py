@@ -2,7 +2,6 @@
 # -*- encoding: utf-8 -*-
 
 from basic import Basic
-from optparse import OptionParser
 import re, os, sys, pickle, time, urllib
 from rss import RSS
 from config import Config
@@ -502,18 +501,5 @@ class Marathon(Basic):
 		self.c.save()
 
 	def __init__(self):
-		parser = OptionParser()
-		parser.add_option("-f", "--fix", dest="fix",
-			action="store_true", help="Fix the configuration file if it contains error.")
-		parser.add_option("-e", "--empty", dest="empty",
-			action="store_true", help="Empty configuration file (not implemented).")
-		(options, args) = parser.parse_args()
 		self.c = Config()
-		if options.empty:
-			self.c.empty()
-		if options.fix:
-			self.c.fix_config()
-		self.rss = RSS(self.c.rssfeeds, self.c.showdata[0]['rsslastupdate'])
-		self.run()
 
-Marathon()
