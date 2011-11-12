@@ -15,10 +15,8 @@ class Marathon(Basic):
 	
 	MAIN, SHOW, SHOWS, ADDSHOWS, RSS, SETTINGS = range(6)
 	
-	def rsscheck(self):
-		if self.rss.check():
-			print "There are new torrents available."
-			print "Type :rss to see them."
+	def get_show_count(self):
+		return len(self.shows)
 	
 	def is_video(self, f):
 		w = f.split(".")
@@ -257,27 +255,6 @@ class Marathon(Basic):
 				self.c.showdata[0].update({'currentshow' : self.currentshow})
 			except KeyError:
 				self.c.showdata.update({0 : {'currentshow' : self.currentshow}})
-	
-	def menu(self, menu, default=None):
-		i = 1
-		tmp = {}
-		tdefault = None
-		for item in menu:
-			print "%s: %s" % (i, item[1])
-			tmp.update({i : item[0]})
-			if default == item[0]:
-				tdefault = i
-			i += 1
-		p = self.i("Option%s: " % (" (%s)" % tdefault if default!=None else ""), True)
-		try:
-			w = int(p)
-			return tmp[w]
-		except (TypeError, ValueError):
-			if p == "" and default != None:
-				return default
-			return p
-		except KeyError:
-			return p
 	
 	def download_torrent(self, url, title):
 		os.system("wget \"%s\" -O \"%s/%s.torrent\"" % (url, self.c.torrentwatchdir, title.replace(' ', '_')))

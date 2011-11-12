@@ -1,5 +1,3 @@
-import sys
-
 class Basic(object):
 	
 	YES, NO = range(2)
@@ -27,34 +25,22 @@ class Basic(object):
 		try:
 			p = raw_input(msg)
 		except EOFError:
-			print ""
-			self.save()
-			print "Quit."
-			sys.exit()
+			return "QUIT"
 		except KeyboardInterrupt:
 			return None
 		if p == ":quit" or p == ":q":
-			self.save()
-			print "Quit."
-			sys.exit()
-		"""
+			return "QUIT"
 		if anoption:
 			if p == ":rss":
-				self.rssmenu()
-				return None
+				return "RSS"
 			if p == ":save" or p == ":s":
-				self.save()
-				return None
+				return "SAVE"
 			if p == ":load" or p == ":l":
-				self.config_init()
-				return None
+				return "LOAD"
 			if p == "..":
 				return "RETURN"
 			if p == "/":
 				return "TOP"
-		self.autosave()
-		self.rsscheck()
-		"""
 		if p == "":
 			return None
 		return p
