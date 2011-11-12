@@ -107,8 +107,9 @@ class Config(Basic):
 			return False
 	
 	def autosave(self):
-		if time.time() - os.stat(self.configfile).st_mtime > 60*30:
-			print "Configuration file not saved for 30 minutes..."
+		minutes = 30
+		if time.time() - os.stat(self.configfile).st_mtime > 60*minutes:
+			print "Configuration file not saved for %i minutes..." % minutes
 			print "Autosaving..."
 			self.save()
 	
