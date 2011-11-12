@@ -7,8 +7,9 @@ class Config(Basic):
 	mplayerconfig = ""
 	showdata = {}
 	rssfeeds = []
+	rsslastupdate = 0
 	torrentwatchdir = ''
-	knownfileextensions = ["mpg", "avi", "mkv", "mp4"]
+	knownfileextensions = ["mpg", "avi", "mkv", "mp4"]	
 		
 	def config_init(self):
 		try:
@@ -17,7 +18,7 @@ class Config(Basic):
 			self.shows = []
 			f.close()
 			print "Data loaded."
-		except IOError:
+		except (IOError, EOFError):
 			print "No configuration file found..."
 			print "Creating configuration `%s'..." % self.configfile
 			self.showdata = {0 : {'mplayerconfig': '', 'currentshow':None,
@@ -94,23 +95,16 @@ class Config(Basic):
 	def empty(self):
 		print "This will empty all your configuration files."
 		print "ALL YOUR SETTINGS WILL BE LOST."
-		r = None
-		while r == None:
-			r = raw_input("Are you sure you want to do this? (y/N) ")
-			if r == "" or r.lower() == "n":
-				w = False
-			elif r.lower() == "y":
-				w = True
-			else:
-				r = None
-		if w:
+		if self.yesno("Are you sure you want to do this?"):
 			print "Emptying configuration file...",
 			f = open(self.configfile, "w")
 			f.write("")
 			f.close()
 			print "done"
+			return True
 		else:
 			print "Not emptying configuration file..."	
+			return False
 	
 	def autosave(self):
 		if time.time() - os.stat(self.configfile).st_mtime > 60*30:

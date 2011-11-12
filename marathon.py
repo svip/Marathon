@@ -510,8 +510,7 @@ class Marathon(Basic):
 		(options, args) = parser.parse_args()
 		self.c = Config()
 		if options.empty:
-			print "Not implemented."
-			#self.empty()
+			self.c.empty()
 		if options.fix:
 			self.c.fix_config()
 		self.rss = RSS(self.c.rssfeeds, self.c.showdata[0]['rsslastupdate'])
