@@ -3,7 +3,6 @@
 
 from basic import Basic
 import re, os, sys, pickle, time, urllib
-from rss import RSS
 from config import Config
 
 class Marathon(Basic):
@@ -493,9 +492,6 @@ class Marathon(Basic):
 		if i < 10:
 			return "0%s" % i
 		return i
-	
-	def dataerror(self):
-		print "Data error.  Please run script with -f"
 	
 	def save(self):
 		self.c.save()
