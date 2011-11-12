@@ -113,8 +113,7 @@ class Marathon(Basic):
 		show.update({'title' : title, 'currentepisode' : (1, 1)})
 		show = self.add_files(title, show)
 		while True:
-			p = self.i("Should we include another directory? (y/N) ")
-			if p.lower() == "y":
+			if self.yesno("Should we include another directory?", self.NO):
 				show = self.add_files(title, show)
 			else:
 				break
@@ -432,38 +431,6 @@ class Marathon(Basic):
 			return (current[0], current[1]+1)
 		except:
 			return self.next_episode(episodes, (current[0]+1, 0))
-				
-	def i(self, msg, anoption=False):
-		try:
-			p = raw_input(msg)
-		except EOFError:
-			print ""
-			self.c.save()
-			print "Quit."
-			sys.exit()
-		except KeyboardInterrupt:
-			return None
-		if p == ":quit" or p == ":q":
-			self.c.save()
-			print "Quit."
-			sys.exit()
-		if anoption:
-			if p == ":rss":
-				self.rssmenu()
-				return None
-			if p == ":save" or p == ":s":
-				self.save()
-				return None
-			if p == ":load" or p == ":l":
-				self.config_init()
-				return None
-			if p == "..":
-				return "RETURN"
-			if p == "/":
-				return "TOP"
-		self.c.autosave()
-		self.rsscheck()
-		return p
 	
 	def z(self, i):
 		if i < 10:
