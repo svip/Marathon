@@ -209,8 +209,12 @@ class Marathon:
 		tmp = []
 		for episode in self.showdata[show]['episodes'][season]:
 			t = self.showdata[show]['episodes'][season][episode]
-			t = t.split("/")
+			try:
+				t = t.split("/")
+			except AttributeError:
+				t = t['file'].split('/')
 			tmp.append((episode, t[len(t)-1]))
+		print tmp
 		tmp.sort(self.seasonsort)
 		for episode in tmp:
 			print "%s: %s" % episode
@@ -396,7 +400,11 @@ class Marathon:
 						except KeyError:
 							continue
 				if tep != None:
-					t = tep.split("/")
+					try:
+						t = tep.split("/")
+					except AttributeError:
+						tep = tep['file']
+						t = tep.split('/')
 					t = t[len(t)-1]
 					print "Current episode: S%sE%s: %s" % (self.z(curep[0]), self.z(curep[1]), t)
 					p = self.menu([("WATCH", "Watch current episode"),
