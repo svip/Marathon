@@ -146,7 +146,7 @@ class Marathon:
 		ep = self.showdata[self.currentshow]['episodes'][curep[0]][curep[1]]
 		try:
 			ep = ep['file']
-		except AttributeError:
+		except (AttributeError, TypeError):
 			pass
 		try:
 			s = self.showdata[self.currentshow]['mplayersettings']

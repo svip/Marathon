@@ -26,6 +26,9 @@ class RSS:
 			print "Error reading `%s':" % feed['feed']
 			print "Connection failed."
 			return feed
+		except KeyboardInterrupt:
+			print "Cancelled..."
+			return feed
 		xml = parseString(content.read())
 		for item in xml.getElementsByTagName('item'):
 			date = time.mktime(time.strptime(item.getElementsByTagName('pubDate')[0].childNodes[0].data, "%a, %d %b %Y %H:%M:%S +0000"))
