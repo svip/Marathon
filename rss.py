@@ -1,5 +1,6 @@
 import time, urllib
 from xml.dom.minidom import parseString
+from xml.parsers.expat import ExpatError
 
 class RSS:
 	
@@ -31,7 +32,7 @@ class RSS:
 			return feed
 		try:
 			xml = parseString(content.read())
-		except xml.parsers.expat.ExpatError:
+		except ExpatError:
 			print "Error parsing content, server must be returning something wrong."
 			return feed
 		for item in xml.getElementsByTagName('item'):
@@ -61,7 +62,7 @@ class RSS:
 			return []
 		try:
 			xml = parseString(content.read())
-		except xml.parsers.expat.ExpatError:
+		except ExpatError:
 			print "Error parsing content, server must be returning something wrong."
 			return []
 		newest = 0
