@@ -29,7 +29,11 @@ class RSS:
 		except KeyboardInterrupt:
 			print "Cancelled..."
 			return feed
-		xml = parseString(content.read())
+		try:
+			xml = parseString(content.read())
+		except xml.parsers.expat.ExpatError:
+			print "Error parsing content, server must be returning something wrong."
+			return feed
 		for item in xml.getElementsByTagName('item'):
 			date = time.mktime(time.strptime(item.getElementsByTagName('pubDate')[0].childNodes[0].data, "%a, %d %b %Y %H:%M:%S +0000"))
 			if date > feed['lastupdate']:
@@ -55,7 +59,11 @@ class RSS:
 			print "Error reading `%s':" % feed['feed']
 			print "Connection failed."
 			return []
-		xml = parseString(content.read())
+		try:
+			xml = parseString(content.read())
+		except xml.parsers.expat.ExpatError:
+			print "Error parsing content, server must be returning something wrong."
+			return []
 		newest = 0
 		items = []
 		for item in xml.getElementsByTagName('item'):
